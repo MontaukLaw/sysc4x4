@@ -27,7 +27,7 @@
 #define FLEX_FLAG 0
 
 #define CAILI_FB_LEN_BYTES 30
-
+#define ZHIYUAN_FOOT_SENSOR_DATA_LEN 56
 extern uint8_t Generic_Reply[50];
 extern uint8_t UDP_11 [56];
 extern uint8_t UDP_15 [20];

@@ -334,13 +334,14 @@ int main(void)
             /* 每隔10ms，采集一次 */
             if (t_10ms_Flag == 1)
             {
+                // printf("t_10ms_Flag\r\n");
                 t_10ms_Flag = 0;         // 标志位置零
                 MCU_Status = 0x01;       // 设置状态为1
                 if (send_once_flag == 1) // 只保存一次状态
                 {
                     Flash_Write_Status(FLASH_STATUS_ADDR, MCU_Status); // 保存状态到Flash
                     MCU_Status = Flash_Read_Status(FLASH_STATUS_ADDR);
-                    printf("\r\n\r\n\r\nsave status:0x%02x\r\n\r\n\r\n", MCU_Status);
+                    // printf("\r\n\r\n\r\nsave status:0x%02x\r\n\r\n\r\n", MCU_Status);
                     HAL_Delay(100);
                     send_once_flag = 0;
                 }
@@ -357,6 +358,8 @@ int main(void)
                 UDP_11[4] = (Cap_Frame_Num >> 8);
                 UDP_11[5] = (Cap_Frame_Num & 0xff);
                 UDP_11[17] = 0x12;
+                // 传感器数量为6个
+                UDP_11[19] = 0x06;
 
                 // 滑动平均滤波
                 for (s = 0; s < 16; s++)
@@ -388,7 +391,9 @@ int main(void)
                 process_value(avg_read_value[2], UDP_11, 50); /* 5 */
 
                 // 发送数据
-                HAL_UART_Transmit(&UartHandle, (uint8_t *)UDP_11, sizeof(UDP_11), 10); // 串口发送数据
+                // HAL_UART_Transmit(&UartHandle, (uint8_t *)UDP_11, sizeof(UDP_11), 10); // 串口发送数据
+                HAL_UART_Transmit(&UartHandle, (uint8_t *)UDP_11, ZHIYUAN_FOOT_SENSOR_DATA_LEN, 10); // 串口发送数据
+
                 while (__HAL_UART_GET_FLAG(&UartHandle, UART_FLAG_TC) == RESET)
                     ; // 等待发送完成
                 Cap_Frame_Num++;

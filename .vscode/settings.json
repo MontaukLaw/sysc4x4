@@ -1,0 +1,12 @@
+{
+    "C_Cpp.errorSquiggles": "disabled",
+    "files.associations": {
+        "*.cjson": "jsonc",
+        "*.wxss": "css",
+        "*.wxs": "javascript",
+        "main.h": "c",
+        "string.h": "c",
+        "iwdg.h": "c",
+        "app_flash.h": "c"
+    }
+}

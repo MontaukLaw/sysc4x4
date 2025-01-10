@@ -171,6 +171,37 @@ int main(void)
 
 #endif
 
+void init_cali_71_01(void)
+{
+    memset(UDP_71, 0, CAILI_FB_LEN_BYTES);
+    UDP_71[0] = 0xFF;
+    UDP_71[1] = 0xFF;
+    UDP_71[2] = 0x06;
+    UDP_71[3] = 0x09;
+
+    UDP_71[6] = 0x00;
+    UDP_71[7] = 0x16;
+
+    UDP_71[8] = 0x33;
+    UDP_71[9] = 0x30;
+    UDP_71[10] = 0x06;
+    UDP_71[11] = 0x66;
+
+    UDP_71[12] = 0x12;
+    UDP_71[13] = 0x34;
+    UDP_71[14] = 0x56;
+    UDP_71[15] = 0x78;
+
+    UDP_71[16] = 0x00;
+    UDP_71[17] = 0x72;
+
+    UDP_71[18] = 0x00;
+    UDP_71[19] = 0x00;
+
+    UDP_71[20] = 0x00;
+    UDP_71[21] = 0x01;
+}
+
 int main(void)
 {
     // HAL库初始化
@@ -194,7 +225,7 @@ int main(void)
     USART1_Init(230400);
 
     // app_read_data();
-    Flash_Read(FLASH_USER_START_ADDR, sizeof(uint32_t) * 6, (uint32_t *)f_flash_buffer);
+    // Flash_Read(FLASH_USER_START_ADDR, sizeof(uint32_t) * 6, (uint32_t *)f_flash_buffer);
     // Flash_Read(FLASH_USER_START_ADDR, sizeof(uint32_t) * 16, f_flash_buffer);
 
     HAL_Delay(100);
@@ -516,6 +547,8 @@ int main(void)
 
             case 0x0001: // 读取单个通道系数
             {
+
+                init_cali_71_01();
                 // 状态位
                 UDP_71[18] = 0x00;
                 UDP_71[19] = 0x01;
@@ -552,7 +585,7 @@ int main(void)
                 // UDP_71[29] = 0x11;
 
                 // 发送回复
-                HAL_UART_Transmit(&UartHandle, (uint8_t *)UDP_71, sizeof(UDP_71), 20); // 串口发送数据
+                HAL_UART_Transmit(&UartHandle, (uint8_t *)UDP_71, CAILI_FB_LEN_BYTES, 20); // 串口发送数据
                 while (__HAL_UART_GET_FLAG(&UartHandle, UART_FLAG_TC) == RESET)
                     ; // 等待发送完成
 
@@ -584,6 +617,10 @@ int main(void)
                 process_value(f_flash_buffer[4], UDP_11, 104); /* 14 */
                 process_value(f_flash_buffer[0], UDP_11, 110); /* 15 */
 
+                // 状态位
+                UDP_11[18] = 0x00;
+                UDP_11[19] = 0x01;
+
                 // 发送数据
                 HAL_UART_Transmit(&UartHandle, (uint8_t *)UDP_11, sizeof(UDP_11), 10);
                 while (__HAL_UART_GET_FLAG(&UartHandle, UART_FLAG_TC) == RESET)
@@ -596,6 +633,7 @@ int main(void)
 
             case 0x0003: // 保存所有通道系数
             {
+
                 // 临时停止数据发送
                 uint8_t original_flag = G_setFlag;
                 G_setFlag = 0x00;
@@ -614,8 +652,8 @@ int main(void)
 
                 // 重置帧号和帧头
                 Cap_Frame_Num = 0;
-                UDP_11[4] = 0;
-                UDP_11[5] = 0;
+                // UDP_11[4] = 0;
+                // UDP_11[5] = 0;
 
                 break;
             }
@@ -624,6 +662,7 @@ int main(void)
     }
 }
 
+#if 0
 int main__(void)
 {
 
@@ -1091,3 +1130,4 @@ int main__(void)
         }
     }
 }
+#endif

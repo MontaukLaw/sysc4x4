@@ -26,10 +26,12 @@
 #define DEFAULE_I2C_ADDR_3  (0x28) 
 #define FLEX_FLAG 0
 
+#define CAILI_FB_LEN_BYTES 30
+
 extern uint8_t Generic_Reply[50];
 extern uint8_t UDP_11 [56];
 extern uint8_t UDP_15 [20];
-extern uint8_t UDP_71 [30];
+extern uint8_t UDP_71 [];
 extern TIM_HandleTypeDef  TimHandle;       // 定时器句柄
 extern IWDG_HandleTypeDef IwdgHandle;      // 看门狗句柄
 extern uint32_t G_USART1_RX_Count;         // 串口计数

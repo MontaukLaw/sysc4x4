@@ -24,7 +24,7 @@ extern ADC_ChannelConfTypeDef    sConfig;    // ADC通道扫描句柄
 extern uint8_t Generic_Reply[50];
 extern uint8_t UDP_11 [56];
 extern uint8_t UDP_15 [20];
-extern uint8_t UDP_71 [30];
+extern uint8_t UDP_71 [];
 extern uint32_t G_USART1_RX_Count;         // 串口计数
 extern uint8_t  G_USART1_RX_Buffer[64];    // 串口缓冲区
 extern volatile uint16_t  G_setFlag;       // 串口标记位

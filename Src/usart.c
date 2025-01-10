@@ -1,5 +1,7 @@
 #include "usart.h"
 #include "py32f0xx_hal.h"
+#define CALI_PACK_LEN 30
+#define NORMAL_CMD_LEN 20
 
 UART_HandleTypeDef UartHandle;  // 串口句柄
 ADC_HandleTypeDef AdcHandle;    // ADC句柄
@@ -67,7 +69,7 @@ uint8_t UDP_11[] = {
 uint8_t UDP_15[] = {
     FRAME_HEADER, 0x00, 0x01, 0x00, 0x0c, DEVICE_ID, TARGET_ID, 0x00, 0x16, 0x00, 0x03};
 
-uint8_t UDP_71[] = {
+uint8_t UDP_71[CAILI_FB_LEN_BYTES] = {
     FRAME_HEADER // 0-3
     ,
     0x00, 0x00 // 4-5
@@ -219,10 +221,99 @@ void USART1_Print_Received_Data(void)
     }
 }
 
+void cali_cmd_parser(void)
+{
+    uint8_t cmd_id = G_USART1_RX_Buffer[17];
+    switch (cmd_id)
+    {
+    case 0x01:
+        UART_RX_CMD_1 = 1;
+        break;
+    case 0x03:
+        UART_RX_CMD_3 = 1;
+        break;
+    case 0x05:
+        UART_RX_CMD_5 = 1;
+        break;
+    case 0x11:
+        UART_RX_CMD_11 = 1;
+        break;
+    case 0x13:
+        UART_RX_CMD_13 = 1;
+        break;
+    case 0x15:
+        UART_RX_CMD_15 = 1;
+        break;
+    }
+}
+
+void normal_cmd_parser(void)
+{
+    uint8_t cmd_id = G_USART1_RX_Buffer[17];
+}
+
 // 解包函数
 void process_received_data(void)
 {
-    //    uint16_t USART1_RX_Len = sizeof((char *)G_USART1_RX_Buffer); // 计算接收到的数据长度
+    uint8_t cmd_id = 0;
+    // printf("G_USART1_RX_Count:%d\r\n", G_USART1_RX_Count);
+    if (G_USART1_RX_Buffer[0] != 0xFF || G_USART1_RX_Buffer[1] != 0xFF || G_USART1_RX_Buffer[2] != 0x06 || G_USART1_RX_Buffer[3] != 0x09)
+    {
+        return;
+    }
+
+    if (G_USART1_RX_Count == NORMAL_CMD_LEN)
+    {
+        cmd_id = G_USART1_RX_Buffer[17];
+
+        switch (cmd_id)
+        {
+        case 0x01:
+            UART_RX_CMD_1 = 1;
+            break;
+        case 0x03:
+            UART_RX_CMD_3 = 1;
+            break;
+        case 0x05:
+            UART_RX_CMD_5 = 1;
+            break;
+        case 0x11:
+            UART_RX_CMD_11 = 1;
+            break;
+        case 0x13:
+            UART_RX_CMD_13 = 1;
+            break;
+        case 0x15:
+            UART_RX_CMD_15 = 1;
+            break;
+        }
+
+        UART_RX_CMD = cmd_id;
+
+        G_USART1_RX_Count = 0;
+    }
+    else if (G_USART1_RX_Count == CALI_PACK_LEN)
+    {
+        cmd_id = G_USART1_RX_Buffer[17];
+
+        if (cmd_id == 0x71)
+        {
+            UART_RX_CMD_71 = 1;
+        }
+
+        UART_RX_CMD = cmd_id;
+
+        G_USART1_RX_Count = 0;
+    }
+
+    // 安全措施
+    if (G_USART1_RX_Count > CALI_PACK_LEN)
+    {
+        G_USART1_RX_Count = 0;
+    }
+
+#if 0
+    // uint16_t USART1_RX_Len = sizeof((char *)G_USART1_RX_Buffer); // 计算接收到的数据长度
     if (G_USART1_RX_Count > 19)
     {
         if (G_USART1_RX_Buffer[0] == 0x23 && G_USART1_RX_Buffer[1] == 0x24)
@@ -287,13 +378,14 @@ void process_received_data(void)
                 break;
             }
 
-            UART_RX_CMD = G_USART1_RX_Buffer[17];
+            UART_RX_CMD = cmd_id; // G_USART1_RX_Buffer[17];
         }
 
         // memset(G_USART1_RX_Buffer, 0, sizeof(G_USART1_RX_Buffer)); // 清空接收缓冲区
         G_USART1_RX_Count = 0;
         // G_USART1_RX_Flag  = 0;
     }
+#endif
 }
 
 // 浮点数转换成十六进制
